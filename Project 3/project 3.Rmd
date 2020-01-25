@@ -1,0 +1,55 @@
+---
+title: "U.S States and Degrees offered"
+author: "Kevil Khadka, Darwin C. Yadav"
+date: "4/24/2019"
+output: html_document
+---
+```{r include=FALSE}
+library(tidyverse)
+library(dplyr)
+library(readr)
+universities_data <- read_csv("IPEDS_data.csv")
+dataset <- select(universities_data, "Highest degree offered", "State abbreviation")
+```
+
+# Introduction
+  There are numerous universities throughout the world. Just talking about the U.S, there are thousands of Universities here. But do they all offer the similar degrees that one wishes to pursue? A person usually settles in a place where he/she gets the basic comforts of life. But, education is a vital part of human life and in this formally driven society of ours, a degree carries great importance. Some people are satisfied with just a high school degree, but to those who explore more a specific subject, even a double doctrate is not enough. So, do all the states in U.S give equal choice of pursuing a degree? Can one have the flexibility of attending a traditional school in all the states equally?   
+
+# Body
+  We will study about the degrees offered by universities in the U.S. but we will only focus on the states that offer these degrees. We found this dataset on kaggle.com/datasets while searching for datasets about universities. We decided to do a study about universities and the different levels of degrees offered in all the states. 
+"Highest degree offered" and "State abbreviation" are the cases out dataset whereas the different levels of degrees and the names of the 50 states are the variables of our dataset.
+The data is from an observational study since a experimenter cannot directly affect the levels of degree offered by a college or the state that the universities belong to.
+
+*Note: The data in a two way table is very big so, it is at the end.
+
+```{r include = FALSE}
+dataTable <- table(dataset$`Highest degree offered`, dataset$`State abbreviation`)
+```
+Expected counts and contributions:
+```{r include}
+chisq.test(dataTable)$expected
+head(chisq.test(dataTable))
+```
+
+Null Hypothesis: Degree levels offered in different states is the same.
+
+Alternative Hypothesis: Degree levels offered in different states are different.
+
+Here, the P- value is very small i.e. 9.85e-05 so, We can confidently reject the null hypothesis and say that the proportion of degree levels offered by universities in different states are different. 
+
+# Conclusion
+  Different degree levels are offered by universities in different states. But, there are some states that do not have colleges that offer the type of degree one is looking for. From our dataset, we can say that Wyoming has the least number of degree offering universities and Alaska falls second least. California has the most degree offering universities. 
+
+# Index
+```{r message = FALSE}
+library(tidyverse)
+library(dplyr)
+library(readr)
+universities_data <- read_csv("IPEDS_data.csv")
+dataset <- select(universities_data, "Highest degree offered", "State abbreviation")
+table(dataset$`Highest degree offered`, dataset$`State abbreviation`)
+dataTable <- table(dataset$`Highest degree offered`, dataset$`State abbreviation`)
+expectedValues <- chisq.test(dataTable)$expected
+head(chisq.test(dataTable))
+```
+
