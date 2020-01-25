@@ -1,0 +1,171 @@
+---
+title: "Project 1"
+author: "Kevil Khadka"
+date: "4/10/2019"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(tidyverse)
+set.seed(3)
+```
+
+Project: Black Friday Analysis
+
+#1. Introduction
+Black Friday knows as the best Friday of the year for those people who like shopping a lot. It is an informal name for the Friday following the Thanksgiving day in the United States.
+
+The Black Friday data set is a sample of the transactions made in a retail store. Retailers like Amazon, E bay, Macy's, Walmart, Best buy and other many stores look for this day every year with the hope of many customers which will take advantage of door-busting deals. 
+
+With the help of this data set, I am going to do random experiments to get the answer of my questions. All questions are listed below: 
+
+Question_1. Is there any duplicate User id in the dataset? If yes, how many customers are registered in the USER_ID after removing duplicate id? 
+
+Question_2. How much each customer (each User_ID) spending on the black friday?
+
+Question_3. Who spends the average amount of money during the black friday? Male or Female?
+
+Question_4. According to the Age category, what age people are registered in the store? and what the location of their residence?
+
+Thrugh the questions, I try to analyize what population age group purchase more on the black friday. According to simple hypothesis, it is clear that most adult will do shopping on the black friday, and age above 55+ would do less shopping. So, I am analysing the gender variable with other variables to find any differences.  
+
+#2. Body
+The black Friday data set is composed with 537577 observations with 12 different columns. Some of variables are categorical and quantitative variables. 
+
+Let's do quick look at the data set: Black Friday
+```{r}
+library(readr)
+BlackFriday <- read_csv("/Volumes/College/SPRING 2019/STAT 266/Project 1/BlackFriday.csv")
+summary(BlackFriday)
+head(BlackFriday)
+```
+
+This data set contains 12 different columns, each representing a corresponding variable.
+
+1. User_ID    - identification of the customer; quantitative variable
+2. Product_ID - identification code for the product; categorical variable
+3. Gender     - Sex of customer; M(male) and F(Female); categorical variable
+4. Age        - Age of customer; divided on categorical variable of age group; maybe categorical variable
+5. Occuption  - Occuption of customer; given on quatitative variable
+6. City_Category - Residence of customer; Catergorical Variable
+7. Stay_In_Current_City_Years - Number of years customers stay in current city; Quantitative variable
+8. Marital_Status - 0 = Single and 1 = Married; Categorical Variable
+9. Product_Category_1 -  Product may belong to category 1
+10. Product_Category_2 -  Product may belong to category 2
+11. Product_Category_3 -  Product may belong to category 3
+12. Purchase: Purchase amount of product by customer; Quantitative variable
+
+
+Let's find out the confidence interval of 95% for the mean. We are going to find out how much each customer purcharse the product during the Black Friday. 
+```{r}
+library(readr)
+BlackFriday <- read_csv("/Volumes/College/SPRING 2019/STAT 266/Project 1/BlackFriday.csv")
+summary(BlackFriday)
+```
+
+```{r}
+length(BlackFriday$Gender)
+mean(BlackFriday$Purchase)
+sd(BlackFriday$Purchase)
+```
+Mean for the Purchase variable : 9333.86
+Standard Deviation for the purchase variable : 4981.022
+
+
+Now we can calculate an error for the mean
+```{r}
+error <- qt(0.975,df=length(BlackFriday$Gender)-1)*sd(BlackFriday$Purchase)/sqrt(length(BlackFriday$Purchase))
+error
+```
+The error for the mean : 13.31518 which is pretty high.
+
+
+We can find the confidence interval by adding and subtracting the error from the mean:
+```{r}
+left <- mean(BlackFriday$Purchase)-error
+right <- mean(BlackFriday$Purchase)+error
+left
+right
+```
+The confidence interval for the mean is: (9320.545, 9347.175). 
+
+
+#2.1. Question_1
+After looking at the dataset, we can find the number of duplicates data for different variables.
+
+First, Let's find the gender of customer stored in the dataset by using User_ID to remove duplicates. 
+```{r}
+customer_gender = BlackFriday %>%
+  select(User_ID, Gender) %>% 
+  group_by(User_ID) %>%
+  distinct()
+#View(customer_gender)
+head(customer_gender)
+summary(customer_gender$Gender)
+```
+Conclusion: We found out that there are 5891 customers registered in the retail stores. With same User ID, the number of males seem greater compare with female number.
+
+We can plot the dataset of gender using ggplot. 
+```{r}
+ggplot(data = customer_gender) + geom_bar(aes(x = Gender, y=..count.., fill = Gender)) +
+                labs(title = 'Gender of Customers')
+```
+
+
+#2.2. Question_2
+Let's find out the amount of purchase did by each customers according to their USER_ID and gender. 
+
+Amount of purchase made by each customers
+```{r}
+each_customer_purchase = BlackFriday %>%
+  select(User_ID, Gender, Purchase) %>% 
+  group_by(User_ID) %>% 
+  arrange(User_ID) %>% 
+  summarise(total_amount_purchase = sum(Purchase)) %>% 
+  arrange(desc(total_amount_purchase))
+
+gender_of_customer_purchase = full_join(each_customer_purchase, customer_gender, by="User_ID")
+
+#View(gender_of_customer_purchase)
+head(gender_of_customer_purchase)
+summary(gender_of_customer_purchase)
+```
+Conclusion: we see that each user id is spending the high amount of money during the black friday. We can see the mean for the total amount of each customer purchase is 851752.
+
+#2.3. Question_3
+Now, we can try to find out the average spending gender who usaully spends more money on the BlackFriday. 
+```{r}
+average_spending_gender = gender_of_customer_purchase %>%
+  group_by(Gender) %>%
+  summarize(Purchase = sum(as.numeric(total_amount_purchase)), Count = n(), 
+            Average = Purchase/Count) %>% 
+  arrange(desc(Purchase))
+
+head(average_spending_gender)
+```
+We can conclude that during black friday, male customers purchase more amount of products than female. We can plot the graph to have better understanding of above result.
+
+```{r}
+ggplot(data = average_spending_gender) + geom_bar(aes(x = Gender, y=Average, fill = Gender), stat = 'identity') + labs(title = 'Average Spending by Gender')
+```
+
+#2.4. Question_4
+The dataset contains the age column to distinguish each customer in different age group. 
+```{r}
+customer_age <- BlackFriday %>% 
+  select(User_ID, Age) %>% 
+  distinct() %>% 
+  count(Age)
+head(customer_age)
+summary(customer_age)
+```
+It is found out that the highest number of customers registerd in the store are from the age group of 26-35. Probabily, family people have done alot of shopping during the black friday. We thought adult group which is 18-25 age would have highest number for shopping activity. But it came on third place after age group of 36-45.
+
+Let's plot the data on the bar graph to have clear visualization data.
+```{r}
+ggplot(data =customer_age) + geom_bar(aes(x=Age, y=n,fill=Age), color='black', stat='identity')+labs(title = "Age of Customers")
+```
+
+#3. Conclusion
+Through the help of dataset, i figure out how the shopping activity is different according to the gender and age group. The males are spending more money for purchasing more product than female. In future, i would like to find out more about marital status of the customer. I want to find out if marital status effects purchase variable or not.
