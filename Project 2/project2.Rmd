@@ -1,0 +1,110 @@
+---
+title: "Admission Probability based on GRE Score"
+author: "Kevil Khadka, Darwin C. Yadav ^[https://www.kaggle.com/mohansacharya/graduate-admissions/downloads/graduate-admissions.zip/2]"
+date: "4/24/2019"
+output: html_document
+---
+
+```{r include=FALSE}
+library(tidyverse)
+library(dplyr)
+library(readr)
+
+Admissions <- read_csv("Admissions.csv")
+
+dataset <- select(Admissions, "GRE Score", "Admission Probability" = "Chance of Admit")
+```
+# Introduction
+  Following the previous research about universities offering different levels of degrees, we decided to study about what affects the chances of a student to get into a graduate school. We keep on hearing about GRE scores playing a big role in the graduate admission process so, we wanted to research about acceptance probabilitiess for universities based on a students GRE score. We found the data on kaggle.com/datasets where there was a studied data about the probabilities of students getting into graduate schools based on various factors like CGPA, SOP, GRE scores and Letter of Recommendation. Since, it is thought that GRE scores play a very big role for the admission of students in to graduate school, we decided to find if GRE scores 'only' really does affect a students admission probability.
+  
+# Body
+Here, we are searching if the GRE scores affect a sudents admission probability so, a student's 'GRE score' is the explanatory variable and the 'Admission Probability' is the response variable.
+
+```{r}
+scatter.smooth(x = dataset$`GRE Score`, y = dataset$`Admission Probability`,main = "GRE Score_vs_Admission Prob.", xlab = "GRE Score", ylab = "Admission Probability")
+```
+
+There are few outliers in the scatterplot and the extreme ones are also influential points.
+We can see the outliers graphically by, 
+
+```{r}
+par(mfrow=c(1, 2))  # divide graph area in 2 column
+boxplot(dataset$`GRE Score`, main = "GRE Score", sub = paste("Outlier rows: ", boxplot.stats(dataset$`GRE Score`)$out))
+boxplot(dataset$`Admission Probability`, main = "Admission Probability", sub = paste("Outlier rows: ", boxplot.stats(dataset$`Admission Probability`)$out))
+```
+
+```{r}
+cor(dataset$`GRE Score`, dataset$`Admission Probability`)
+#linear regression
+linearMod <- lm(dataset$`Admission Probability` ~ dataset$`GRE Score`,data=dataset)
+lm(dataset$`Admission Probability` ~ dataset$`GRE Score`,data=dataset)
+```
+
+Here, the regression equation:
+Admission Probability = Intercept + (B * GRE Score)
+                      = -2.483 + 0.1013 * GRE Score
+
+```{r}
+#residual value
+residualvalue <- resid(linearMod)
+
+plot(dataset$`GRE Score`, residualvalue, ylab="Residuals", xlab="Admission Probability", main="Residual Value for GRE Score vs Admission Probability") 
+abline(0, 0)
+
+summary(linearMod)
+
+anova(lm(dataset$`Admission Probability` ~ dataset$`GRE Score`,data=dataset))
+
+```
+Let's take 95% predication interval of the admission probability of a student for the GRE score of 340.The 95% prediction interval of the admission probability of a student for the GRE score of 340 is between 0.7662564 and 1.0929514.
+
+P-Value: 2.2e-16
+t-value: 30.86
+Null Hypothesis: GRE scores do not affect the Admission Probability of a student in Graduate school.
+Alternative Hypothesis: GRE scores affect the Admission Probability of a student.
+
+Here, the P-value is 2.2e-16. It is a very small value. Hence, we can reject the Null Hypothesis. 
+We can confidently say that a high GRE score increases the probability of getting into a Graduate school.
+
+# Conclusion
+  The result was very obvious just by looking at the dataset and its scatterplot since the scatterplot showed a trend of Admission Probability being positively associated with the higher GRE scores. Also, the very small p-value after the test rejected our null hypothesis and we are statistically confident that a higher GRE score increases the probability of getting admission into a graduate school.
+
+
+# Index
+
+```{r}
+library(tidyverse)
+library(dplyr)
+library(readr)
+
+Admissions <- read_csv("Admissions.csv")
+dataset <- select(Admissions, "GRE Score", "Admission Probability" = "Chance of Admit")
+
+scatter.smooth(x = dataset$`GRE Score`, y = dataset$`Admission Probability`,main = "GRE Score_vs_Admission Prob.", xlab = "GRE Score", ylab = "Admission Probability")
+
+par(mfrow=c(1, 2))  # divide graph area in 2 column
+boxplot(dataset$`GRE Score`, main = "GRE Score", sub = paste("Outlier rows: ", boxplot.stats(dataset$`GRE Score`)$out))
+boxplot(dataset$`Admission Probability`, main = "Admission Probability", sub = paste("Outlier rows: ", boxplot.stats(dataset$`Admission Probability`)$out))
+
+cor(dataset$`GRE Score`, dataset$`Admission Probability`)
+
+#linear regression
+linearMod <- lm(dataset$`Admission Probability` ~ dataset$`GRE Score`,data=dataset)
+
+lm(dataset$`Admission Probability` ~ dataset$`GRE Score`,data=dataset)
+
+#predication interval 
+#predict(linearMod,data.frame("dataset$`GRE Score`"=340),interval="prediction",level = 0.95)
+
+#residual value
+residualvalue <- resid(linearMod)
+
+plot(dataset$`GRE Score`, residualvalue, ylab="Residuals", xlab="Admission Probability", main="Residual Value for GRE Score vs Admission Probability") 
+abline(0, 0)
+
+summary(linearMod)
+
+anova(lm(dataset$`Admission Probability` ~ dataset$`GRE Score`,data=dataset))
+
+```
+
